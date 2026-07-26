@@ -136,3 +136,33 @@ def get_diagram(identifier: str) -> Optional[DiagramRecord]:
         source=row["source"],
         rendered_svg=row["rendered_svg"],
     )
+
+
+def update_diagram(
+    identifier: str,
+    *,
+    source: str,
+    rendered_svg: Optional[str] = None,
+    slug: Optional[str] = None,
+    title: Optional[str] = None,
+) -> Optional[DiagramRecord]:
+    existing = get_diagram(identifier)
+    if not existing:
+        return None
+
+    return create_or_update_diagram(
+        source,
+        key=existing.key,
+        slug=slug,
+        title=title,
+        rendered_svg=rendered_svg,
+    )
+
+
+def delete_diagram(identifier: str) -> bool:
+    with _connect() as connection:
+        result = connection.execute(
+            "DELETE FROM diagrams WHERE key = ? OR slug = ?",
+            (identifier, identifier),
+        )
+        return result.rowcount > 0

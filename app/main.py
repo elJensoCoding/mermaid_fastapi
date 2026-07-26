@@ -10,7 +10,14 @@ from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .storage import DiagramRecord, create_or_update_diagram, get_diagram, init_db
+from .storage import (
+    DiagramRecord,
+    create_or_update_diagram,
+    delete_diagram,
+    get_diagram,
+    init_db,
+    update_diagram,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,6 +42,19 @@ app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="stat
 
 def _build_share_path(record: DiagramRecord) -> str:
     return f"/d/{record.slug or record.key}"
+
+
+def _diagram_payload(request: Request, record: DiagramRecord) -> dict[str, Optional[str]]:
+    base_url = str(request.base_url).rstrip("/")
+    return {
+        "key": record.key,
+        "slug": record.slug,
+        "title": record.title,
+        "source": record.source,
+        "rendered_svg": record.rendered_svg,
+        "share_url": base_url + _build_share_path(record),
+        "edit_url": base_url + f"/edit/{record.key}",
+    }
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -117,15 +137,47 @@ async def save_diagram(request: Request) -> JSONResponse:
     except sqlite3.IntegrityError as exc:
         raise HTTPException(status_code=409, detail="Slug ist bereits vergeben.") from exc
 
-    return JSONResponse(
-        {
-            "key": record.key,
-            "slug": record.slug,
-            "title": record.title,
-            "share_url": str(request.base_url).rstrip("/") + _build_share_path(record),
-            "edit_url": str(request.base_url).rstrip("/") + f"/edit/{record.key}",
-        }
-    )
+    return JSONResponse(_diagram_payload(request, record), status_code=201)
+
+
+@app.get("/api/diagrams/{identifier}", response_class=JSONResponse)
+async def get_diagram_api(request: Request, identifier: str) -> JSONResponse:
+    diagram = get_diagram(identifier)
+    if not diagram:
+        raise HTTPException(status_code=404, detail="Diagramm nicht gefunden.")
+
+    return JSONResponse(_diagram_payload(request, diagram))
+
+
+@app.put("/api/diagrams/{identifier}", response_class=JSONResponse)
+async def update_diagram_api(request: Request, identifier: str) -> JSONResponse:
+    payload = await request.json()
+    try:
+        record = update_diagram(
+            identifier,
+            source=payload.get("source", ""),
+            rendered_svg=payload.get("rendered_svg"),
+            title=payload.get("title"),
+            slug=payload.get("slug"),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail="Slug ist bereits vergeben.") from exc
+
+    if not record:
+        raise HTTPException(status_code=404, detail="Diagramm nicht gefunden.")
+
+    return JSONResponse(_diagram_payload(request, record))
+
+
+@app.delete("/api/diagrams/{identifier}", response_class=JSONResponse)
+async def delete_diagram_api(identifier: str) -> JSONResponse:
+    deleted = delete_diagram(identifier)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Diagramm nicht gefunden.")
+
+    return JSONResponse({"deleted": True, "identifier": identifier})
 
 
 @app.get("/d/{identifier}")

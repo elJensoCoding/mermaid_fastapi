@@ -53,6 +53,9 @@ Danach ist der Editor unter [http://127.0.0.1:8000/](http://127.0.0.1:8000/) err
 - `GET /edit/{identifier}` oeffnet ein bestehendes Diagramm zur Bearbeitung
 - `POST /edit` speichert ein Diagramm aus dem HTML-Formular
 - `POST /api/diagrams` speichert ein Diagramm per JSON
+- `GET /api/diagrams/{identifier}` liefert Diagramm-Metadaten und Source als JSON
+- `PUT /api/diagrams/{identifier}` aktualisiert ein bestehendes Diagramm
+- `DELETE /api/diagrams/{identifier}` loescht ein Diagramm
 - `GET /d/{identifier}` liefert das gespeicherte SVG direkt aus
 
 `{identifier}` kann entweder die UUID oder ein optional gesetzter Slug sein.
@@ -82,6 +85,31 @@ Beispielantwort:
   "share_url": "http://127.0.0.1:8000/d/netzwerk",
   "edit_url": "http://127.0.0.1:8000/edit/49cd2c3c-32e0-495c-a1ec-bb2861ea632d"
 }
+```
+
+Bestehendes Diagramm aktualisieren:
+
+```bash
+curl -X PUT http://127.0.0.1:8000/api/diagrams/netzwerk \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Netzwerk v2",
+    "slug": "netzwerk",
+    "source": "flowchart LR; A-->B; B-->C",
+    "rendered_svg": "<svg>...</svg>"
+  }'
+```
+
+Diagramm lesen:
+
+```bash
+curl http://127.0.0.1:8000/api/diagrams/netzwerk
+```
+
+Diagramm loeschen:
+
+```bash
+curl -X DELETE http://127.0.0.1:8000/api/diagrams/netzwerk
 ```
 
 ## Wichtiger Hinweis zur SVG-Erzeugung

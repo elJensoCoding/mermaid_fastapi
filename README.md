@@ -19,7 +19,7 @@ Die Anwendung bringt einen einfachen Editor mit Live-Preview mit. Diagramme koen
 - FastAPI
 - Jinja2 Templates
 - SQLite als lokale Persistenz
-- Mermaid im Browser
+- Mermaid im Browser, lokal vom FastAPI-Service ausgeliefert
 
 ## Projektstruktur
 
@@ -115,6 +115,8 @@ curl -X DELETE http://127.0.0.1:8000/api/diagrams/netzwerk
 ## Wichtiger Hinweis zur SVG-Erzeugung
 
 Das SVG wird im Browser durch Mermaid gerendert und beim Speichern mit abgelegt. Dadurch kann die Share-Route das fertige SVG direkt ausliefern, ohne serverseitig einen Headless-Browser starten zu muessen.
+
+Die Mermaid-Bibliothek wird lokal unter `static/vendor/` mit ausgeliefert. Dadurch ist fuer den Editor kein externer CDN-Zugriff noetig.
 
 Falls du bestehende Diagramme aus einer aelteren Version der App hast, sollten diese einmal im Editor neu gespeichert werden, damit das gerenderte SVG mit in der Datenbank liegt.
 

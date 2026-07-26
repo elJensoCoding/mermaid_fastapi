@@ -1,4 +1,4 @@
-import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+import mermaid from "/static/vendor/mermaid.esm.min.mjs";
 
 const textarea = document.getElementById("diagram-source");
 const preview = document.getElementById("preview");

@@ -5,19 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mermaid Host Service</title>
     <link rel="stylesheet" href="/static/editor.css" />
+    <script src="/static/vendor/mermaid.min.js"></script>
     <script type="module" src="/static/editor.js"></script>
   </head>
   <body>
     <main class="layout">
       <section class="panel panel-editor">
         <div class="panel-header">
-          <div>
+          <div class="hero-copy">
             <p class="eyebrow">Mermaid Hosting</p>
-            <h1>Kleiner Editor mit Share-Link</h1>
+            <h1>Diagramme bauen, teilen und direkt ausliefern</h1>
+            <p class="hero-text">Leichter Editor fuer Intranet-Diagramme mit Live-Preview, SVG-Link und PNG-Export.</p>
           </div>
-          {% if share_path %}
-          <a class="button button-secondary" href="{{ share_path }}" target="_blank">SVG oeffnen</a>
-          {% endif %}
+          <div class="header-actions">
+            <a class="button button-secondary" href="{{ list_path }}">Diagramme</a>
+            {% if share_path %}
+            <a class="button button-secondary" href="{{ share_path }}" target="_blank">SVG oeffnen</a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="info-strip">
+          <span class="info-pill">Live Preview</span>
+          <span class="info-pill">SVG Share URL</span>
+          <span class="info-pill">PNG Export</span>
         </div>
 
         <form method="post" action="/edit" class="editor-form">
@@ -41,6 +52,11 @@
 
           <div class="actions">
             <button type="submit" class="button">Speichern</button>
+            <button type="button" id="download-png" class="button button-secondary">PNG Export</button>
+            {% if diagram %}
+            <button type="submit" class="button button-secondary" formaction="/edit/{{ diagram.key }}/duplicate" formmethod="post">Duplizieren</button>
+            <button type="submit" class="button button-danger" formaction="/edit/{{ diagram.key }}/delete" formmethod="post" onclick="return confirm('Diagramm wirklich loeschen?');">Loeschen</button>
+            {% endif %}
             {% if share_path %}
             <p class="share-note">
               Share URL:
@@ -51,14 +67,22 @@
           {% if saved %}
           <p class="status success">Diagramm wurde gespeichert.</p>
           {% endif %}
+          {% if duplicated %}
+          <p class="status success">Diagramm wurde als neue Kopie angelegt.</p>
+          {% endif %}
+          <p id="export-status" class="status muted" hidden></p>
+          {% if auth_enabled %}
+          <p class="status muted">Editor und schreibende API-Routen koennen per Basic Auth geschuetzt sein.</p>
+          {% endif %}
         </form>
       </section>
 
       <section class="panel panel-preview">
         <div class="panel-header">
-          <div>
+          <div class="hero-copy">
             <p class="eyebrow">Live Preview</p>
             <h2>Direkte Vorschau im Browser</h2>
+            <p class="hero-text">Die aktuelle Mermaid-Definition wird lokal im Browser gerendert und kann direkt gespeichert oder exportiert werden.</p>
           </div>
         </div>
         <div id="preview" class="preview"></div>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diagramm-Uebersicht</title>
+    <link rel="stylesheet" href="/static/editor.css" />
+  </head>
+  <body>
+    <main class="layout layout-single">
+      <section class="panel panel-editor">
+        <div class="panel-header">
+          <div class="hero-copy">
+            <p class="eyebrow">Mermaid Hosting</p>
+            <h1>Gespeicherte Diagramme</h1>
+            <p class="hero-text">Schneller Zugriff auf bestehende Diagramme, Duplikate und Share-Links.</p>
+          </div>
+          <a class="button" href="/">Neues Diagramm</a>
+        </div>
+
+        <form method="get" action="/diagrams" class="search-form">
+          <input type="text" name="q" value="{{ query }}" placeholder="Nach Titel, Slug oder Inhalt suchen" />
+          <button type="submit" class="button">Suchen</button>
+        </form>
+
+        {% if deleted %}
+        <p class="status success">Diagramm wurde geloescht.</p>
+        {% endif %}
+
+        <div class="diagram-list">
+          {% for diagram in diagrams %}
+          <article class="diagram-card">
+            <div class="diagram-card-header">
+              <div>
+                <h2>{{ diagram.title or diagram.slug or diagram.key }}</h2>
+                <p class="status muted">Key: {{ diagram.key }}</p>
+              </div>
+              <div class="card-actions">
+                <a class="button button-secondary" href="/edit/{{ diagram.key }}">Bearbeiten</a>
+                <form method="post" action="/edit/{{ diagram.key }}/duplicate" class="inline-form">
+                  <button type="submit" class="button button-secondary">Duplizieren</button>
+                </form>
+                <a class="button button-secondary" href="/d/{{ diagram.slug or diagram.key }}" target="_blank">SVG</a>
+              </div>
+            </div>
+            <p class="status muted">Slug: {{ diagram.slug or "-" }}</p>
+            <p class="status muted">Aktualisiert: {{ diagram.updated_at or "-" }}</p>
+            <pre class="source-preview">{{ diagram.source[:300] }}{% if diagram.source|length > 300 %}...{% endif %}</pre>
+          </article>
+          {% else %}
+          <p class="status muted">Noch keine Diagramme gespeichert.</p>
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

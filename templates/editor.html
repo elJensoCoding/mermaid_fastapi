@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mermaid Host Service</title>
+    <link rel="stylesheet" href="/static/editor.css" />
+    <script type="module" src="/static/editor.js"></script>
+  </head>
+  <body>
+    <main class="layout">
+      <section class="panel panel-editor">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Mermaid Hosting</p>
+            <h1>Kleiner Editor mit Share-Link</h1>
+          </div>
+          {% if share_path %}
+          <a class="button button-secondary" href="{{ share_path }}" target="_blank">SVG oeffnen</a>
+          {% endif %}
+        </div>
+
+        <form method="post" action="/edit" class="editor-form">
+          <input type="hidden" name="key" value="{{ diagram.key if diagram else '' }}" />
+          <input type="hidden" id="rendered-svg" name="rendered_svg" value="{{ diagram.rendered_svg if diagram and diagram.rendered_svg else '' }}" />
+
+          <label>
+            <span>Titel</span>
+            <input type="text" name="title" value="{{ diagram.title if diagram and diagram.title else '' }}" placeholder="Optionaler Anzeigename" />
+          </label>
+
+          <label>
+            <span>Slug</span>
+            <input type="text" name="slug" value="{{ diagram.slug if diagram and diagram.slug else '' }}" placeholder="optional-slug-name" />
+          </label>
+
+          <label class="editor-label">
+            <span>Mermaid Source</span>
+            <textarea id="diagram-source" name="source" spellcheck="false">{{ diagram_source }}</textarea>
+          </label>
+
+          <div class="actions">
+            <button type="submit" class="button">Speichern</button>
+            {% if share_path %}
+            <p class="share-note">
+              Share URL:
+              <a href="{{ share_path }}" target="_blank">{{ share_path }}</a>
+            </p>
+            {% endif %}
+          </div>
+          {% if saved %}
+          <p class="status success">Diagramm wurde gespeichert.</p>
+          {% endif %}
+        </form>
+      </section>
+
+      <section class="panel panel-preview">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">Live Preview</p>
+            <h2>Direkte Vorschau im Browser</h2>
+          </div>
+        </div>
+        <div id="preview" class="preview"></div>
+        <p id="preview-error" class="status error" hidden></p>
+      </section>
+    </main>
+  </body>
+</html>

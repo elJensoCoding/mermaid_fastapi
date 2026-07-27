@@ -51,6 +51,52 @@ uvicorn app.main:app --reload
 
 Danach ist der Editor unter [http://127.0.0.1:8000/](http://127.0.0.1:8000/) erreichbar.
 
+## Betrieb als eigener Container
+
+Wenn du den Mermaid-Service lieber separat neben deinen Hauptservice stellen willst, ist das hier der einfachste Weg.
+
+Image mit Podman bauen:
+
+```bash
+podman build -t mermaid-fastapi -f Containerfile .
+```
+
+Container mit Podman starten:
+
+```bash
+podman run --rm -p 8000:8000 -v mermaid-fastapi-data:/app/data:Z mermaid-fastapi
+```
+
+Mit Basic Auth:
+
+```bash
+podman run --rm -p 8000:8000 \
+  -e MERMAID_EDITOR_USERNAME=admin \
+  -e MERMAID_EDITOR_PASSWORD=ein-sicheres-passwort \
+  -v mermaid-fastapi-data:/app/data:Z \
+  mermaid-fastapi
+```
+
+Mit Compose-Datei:
+
+```bash
+docker compose up --build
+```
+
+Oder mit Podman Compose:
+
+```bash
+podman-compose up --build
+```
+
+Hinweise zum Container-Betrieb:
+
+- die SQLite-Datenbank liegt im Container unter `/app/data/diagrams.db`
+- das Volume `/app/data` sollte persistent gemountet werden
+- der Container startet absichtlich nur `uvicorn` und braucht keine weiteren Systempakete
+- der Service ist damit gut als kleiner Sidecar- oder Zusatzservice hinter Reverse Proxy nutzbar
+- bei Podman ist das `:Z` am Volume-Mount fuer SELinux-Kontexte oft sinnvoll
+
 ## Routen
 
 - `GET /` zeigt einen neuen Editor mit Beispiel-Diagramm

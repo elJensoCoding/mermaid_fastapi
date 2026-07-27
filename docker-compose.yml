@@ -1,0 +1,20 @@
+services:
+  mermaid-fastapi:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: mermaid-fastapi:latest
+    container_name: mermaid-fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: "8000"
+      # Optional:
+      # MERMAID_EDITOR_USERNAME: admin
+      # MERMAID_EDITOR_PASSWORD: ein-sicheres-passwort
+    volumes:
+      - mermaid-fastapi-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  mermaid-fastapi-data:

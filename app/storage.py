@@ -126,6 +126,20 @@ def _connect() -> sqlite3.Connection:
     return connection
 
 
+def _normalize_svg(svg: str) -> str:
+    svg = svg.strip()
+
+    if "xlink:" in svg and "xmlns:xlink=" not in svg:
+        svg = re.sub(
+            r"<svg\b",
+            '<svg xmlns:xlink="http://www.w3.org/1999/xlink"',
+            svg,
+            count=1,
+        )
+
+    return svg
+
+
 def create_or_update_diagram(
     source: str,
     *,
@@ -140,6 +154,9 @@ def create_or_update_diagram(
         raise ValueError(f"Diagramm-Quelltext ist zu gross. Maximal {MAX_SOURCE_LENGTH} Zeichen.")
     if not rendered_svg or not rendered_svg.strip():
         raise ValueError("Gerendertes SVG fehlt. Bitte Vorschau laden und erneut speichern.")
+
+    rendered_svg = _normalize_svg(rendered_svg)
+    
     if len(rendered_svg) > MAX_SVG_LENGTH:
         raise ValueError(f"Gerendertes SVG ist zu gross. Maximal {MAX_SVG_LENGTH} Zeichen.")
     if title and len(title) > MAX_TITLE_LENGTH:
